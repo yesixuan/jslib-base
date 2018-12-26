@@ -2,8 +2,8 @@ var path = require('path');
 
 var cdkit = require('cdkit')
 
-var fromName = 'jslib-base';
-var toName = 'yanhajing';
+var fromName = '@ignorance/vue-validator';
+var toName = '@ignorance/vue-validator';
 
 function getFullPath (filename) {
     return path.join(__dirname, filename)

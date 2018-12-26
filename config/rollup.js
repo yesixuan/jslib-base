@@ -3,19 +3,19 @@ var babel = require('rollup-plugin-babel');
 
 var pkg = require('../package.json');
 
-// compatible with jslib-base and @yanhaijing/jslib-base
-// @yanhaijing/jslib-base -> jslib-base
+// compatible with @ignorance/vue-validator and @yesixuan/@ignorance/vue-validator
+// @yesixuan/@ignorance/vue-validator -> @ignorance/vue-validator
 var name = pkg.name.split('/').pop();
-// @yanhaijing/jslib-base -> yanhaijing_jslib-base
+// @yesixuan/@ignorance/vue-validator -> yesixuan_@ignorance/vue-validator
 // var name = pkg.name.replace('@', '').replace(/\//g, '_');
 var version = pkg.version;
 
 var banner = 
 `/*!
- * ${pkg.name} ${version} (https://github.com/yanhaijing/jslib-base)
- * API https://github.com/yanhaijing/jslib-base/blob/master/doc/api.md
- * Copyright 2017-${(new Date).getFullYear()} yanhaijing. All Rights Reserved
- * Licensed under MIT (https://github.com/yanhaijing/jslib-base/blob/master/LICENSE)
+ * ${pkg.name} ${version} (https://github.com/yesixuan/@ignorance/vue-validator)
+ * API https://github.com/yesixuan/@ignorance/vue-validator/blob/master/doc/api.md
+ * Copyright 2017-${(new Date).getFullYear()} yesixuan. All Rights Reserved
+ * Licensed under MIT (https://github.com/yesixuan/@ignorance/vue-validator/blob/master/LICENSE)
  */
 `;
 

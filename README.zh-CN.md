@@ -13,6 +13,15 @@
 
 **The library that based vue-validator can be shared to the [vue-validator](https://github.com/yesixuan) platform**
 
+## 特色
+
+1. 与 UI 组件库解耦，只提供最纯粹的校验功能（使用者可以自己选择使用校验结果来实现自己想要的功能）
+2. 配置约定，通过配置来定义表单的校验规则。实现表单校验与业务逻辑解耦
+3. 校验规则支持默认规则、正则表达式、校验函数
+4. 支持扩展默认的规则。（通过 `extendRegexp` 扩展正则规则，通过 `extendValidator` 扩展校验函数）
+5. 支持单个表单元素校验。（校验信息通过调用 `$verify(<name>)` 来获取）
+6. 支持提交时，校验不通过则自动拦截提交操作（可配置，通过 `v-validate` 指令的修饰符 `autoCatch` 来自动拦截提交）
+
 ## 安装
 
 ```bash
@@ -100,4 +109,5 @@ export default {
 }
 </style>
 ```
+
 

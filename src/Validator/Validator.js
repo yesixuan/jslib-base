@@ -1,5 +1,5 @@
 import defaultRules from '../Rules/Rules' // 默认名改成具名导出
-// console.log(rules)
+import { partial } from "../utils/functional"
 
 export default class Validator {
   constructor(el, { arg, value, value: { fields, rules }, modifiers }, { context }, _Vue) {
@@ -31,15 +31,34 @@ export default class Validator {
   }
 
   /**
+   * 将形如："min:5""max:8""min:5 max:8" 的字符串解析成校验字符串长度的校验函数
+   * @param rule: string
+   * @returns {function({length: number}): boolean}
+   */
+  createLengthValidate(rule) {
+    const reg = /^(m(ax|in):(\d+))(\sm(ax|in):(\d+)){0,1}$/
+    const [ , , p2, p3, p4, p5, p6 ] = rule.match(reg)
+    let min, max
+    p2 === 'in' ? min = p3 : max = p3
+    if (p4 && p2 !== p5) {
+      p5 === 'ax' ? max = p6 : min = p6
+    }
+    if ((min && max) && (~~min > ~~max)) throw '最小长度不能大于最大长度'
+    return ({length}) => !((min && ~~min > length) || (max && ~~max < length))
+  }
+
+  /**
    * 验证 validator 的值类型，将其统一包装成函数
    * @param validator
    * @returns Function
    */
-  createRegValidator(validator) {
+  createValidator(validator) {
     if (typeof validator === 'string') {
-      try {
+      if (defaultRules.rules[validator]) {
         return defaultRules.rules[validator]
-      } catch (e) {
+      } else if (/^(m(ax|in):(\d+))(\sm(ax|in):(\d+)){0,1}$/.test(validator)) {
+        return this.createLengthValidate(validator)
+      } else {
         throw `您还未定义 ${validator} 这条规则`
       }
     } else if (validator instanceof RegExp) {
@@ -51,21 +70,8 @@ export default class Validator {
     }
   }
 
-  createValidateData(target, name, res) {
-    target = res
-    this.vm.$set(this.$vec, name, target)
-    // this.validateData[name] = target
-  }
-
-  /**
-   * 创建错误信息数据的偏函数（提前接收两个固定参数）
-   * @param args
-   * @returns {function(*=): void}
-   */
-  partialCreateValidateData(...args) {
-    return res => {
-      return this.createValidateData(...args, res)
-    }
+  createValidateData(name, res) {
+    this.vm.$set(this.$vec, name, res)
   }
 
   /**
@@ -78,23 +84,24 @@ export default class Validator {
   verifySingle(val, rules, name) {
     let res = {}
     const required = rules.some(rule => rule.validator === 'required')
-    const handler = this.partialCreateValidateData(res, name)
+    // 创建偏函数，接收部分参数
+    const saveRes = partial(this.createValidateData.bind(this), name)
     for (let i = 0; i < rules.length; i++) {
       let rule = rules[i]
       if (val === '' && !required) {
-        handler({ pass: true, msg: '校验通过' })
+        saveRes({ pass: true, msg: '' })
         return res
       }
       if (required && val === '') {
-        handler({ pass: false, msg: '必填' })
+        saveRes({ pass: false, msg: '必填' })
         return res
       }
-      if (val !== '' && rule.validator !== 'required' && !this.createRegValidator(rule.validator)(val)) {
-        handler({ pass: false, msg: rule.msg || '默认校验不通过消息' })
+      if (val !== '' && rule.validator !== 'required' && !this.createValidator(rule.validator)(val)) {
+        saveRes({ pass: false, msg: rule.msg || '默认校验不通过消息' })
         return res
       }
     }
-    handler({ pass: true, msg: '校验通过' })
+    saveRes({ pass: true, msg: '' })
     return res
   }
 
@@ -120,8 +127,8 @@ export default class Validator {
    * 这样定义方法才能保证该方法被添作事件监听者的时候 this 的指向符合预期
    * @param e
    */
-  changeListener = e => {
-    this.verifySingle(e.target.value, this.rules[e.target.name], e.target.name)
+  changeListener = ({ target: { value, name } }) => {
+    this.verifySingle(value, this.rules[name], name)
   }
 
   focusListener = ({ target }) => {
